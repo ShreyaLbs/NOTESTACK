@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/60c8f362-3d60-4898-8c3a-c3519656325b)
+
+
 # NoteStack
 
 NoteStack is a simple, modern web-based note-taking app. It allows you to quickly add, edit, delete, and search notes, all stored locally in your browser. The interface is clean and responsive, supporting both light and dark modes.
