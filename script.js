@@ -11,6 +11,16 @@ function saveNotes() {
 
 function renderNotes(filter = "") {
     notesGrid.innerHTML = "";
+    const filteredNotes = notes.filter(note =>
+    note.toLowerCase().includes(filter.toLowerCase())
+);
+
+if (filteredNotes.length === 0 && filter.trim() !== "") {
+    notesGrid.innerHTML = `<p style="text-align:center; margin-top:20px; color:#777;">
+        No notes found matching "${filter}"
+    </p>`;
+    return;
+}
     notes
         .filter(note => note.toLowerCase().includes(filter.toLowerCase()))
         .forEach((note, index) => {
