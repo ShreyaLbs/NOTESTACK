@@ -10,7 +10,7 @@ let notes = JSON.parse(localStorage.getItem("ultimateNotes")) || [];
 let currentFilter = "all";
 
 function saveNotes() {
-    localStorage.setItem("ultimateNotes", JSON.stringify(notes));
+    localStorage.setItem("notestackNotes", JSON.stringify(notes));
 }
 
 // Migrate old notes (plain strings) to new object format
