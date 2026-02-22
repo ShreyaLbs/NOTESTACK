@@ -8,6 +8,7 @@ const labelCheckboxes = document.querySelectorAll(".label-checkbox");
 let trash = JSON.parse(localStorage.getItem("ultimateTrash")) || [];
 let notes = JSON.parse(localStorage.getItem("ultimateNotes")) || [];
 let currentFilter = "all"; // Track current category filter
+
 function getSelectedLabels() {
     const selected = [];
     labelCheckboxes.forEach(checkbox => {
@@ -17,7 +18,80 @@ function getSelectedLabels() {
     });
     return selected;
 }
-
+function filterNotesByCategory(category) {
+    currentFilter = category;
+    
+    if (category === "all") {
+        renderNotes(searchInput.value);
+    } else {
+        const filtered = notes.filter(note => 
+            note.labels && note.labels.includes(category)
+        );
+        
+        // Create a temporary filtered display
+        notesGrid.innerHTML = "";
+        
+        if (filtered.length === 0) {
+            notesGrid.innerHTML = `<p style="text-align:center; margin-top:20px; color:#777;">
+                No ${category} notes found
+            </p>`;
+            return;
+        }
+        
+        filtered.forEach((note, index) => {
+            const originalIndex = notes.findIndex(n => n.id === note.id);
+            
+            const card = document.createElement("div");
+            card.className = "note-card";
+            
+            if (note.labels && note.labels.length > 0) {
+                card.setAttribute('data-labels', note.labels.join(' '));
+                
+                const labelsDiv = document.createElement("div");
+                labelsDiv.className = "note-labels";
+                
+                note.labels.forEach(label => {
+                    const labelSpan = document.createElement("span");
+                    labelSpan.className = `note-label ${label.toLowerCase()}`;
+                    labelSpan.textContent = label;
+                    labelsDiv.appendChild(labelSpan);
+                });
+                
+                card.appendChild(labelsDiv);
+            }
+            
+            const content = document.createElement("p");
+            content.textContent = note.text;
+            
+            const actions = document.createElement("div");
+            actions.className = "card-actions";
+            
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.className = "edit-btn";
+            editBtn.onclick = () => editNote(originalIndex);
+            
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.onclick = () => deleteNote(originalIndex);
+            
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+            
+            card.appendChild(content);
+            card.appendChild(actions);
+            
+            notesGrid.appendChild(card);
+        });
+    }
+    
+    // Update active state in sidebar
+    document.querySelectorAll('.sidebar li').forEach(li => {
+        li.classList.remove('active');
+    });
+    document.getElementById(`nav${category}`).classList.add('active');
+}
 function saveNotes() {
     localStorage.setItem("ultimateNotes", JSON.stringify(notes));
 }
@@ -148,9 +222,9 @@ function deleteNote(index) {
 }
 
 function editNote(index) {
-    const updated = prompt("Edit note:", notes[index]);
+    const updated = prompt("Edit note:", notes[index].text);
     if (updated !== null && updated.trim() !== "") {
-        notes[index] = updated.trim();
+        notes[index].text = updated.trim();
         saveNotes();
         renderNotes(searchInput.value);
     }
@@ -242,7 +316,6 @@ function restoreNote(index) {
         }
     }
 }
-
 function permanentlyDelete(index) {
      if (!confirm("Permanently delete this note? This cannot be undone.")) return;
     trash.splice(index, 1);
@@ -306,32 +379,6 @@ function renderTrash() {
     });
 }
 
-    trash.forEach((note, index) => {
-        const card = document.createElement("div");
-        card.className = "note-card";
-
-        const content = document.createElement("p");
-        content.textContent = note;
-
-        const actions = document.createElement("div");
-        actions.className = "card-actions";
-
-        const restoreBtn = document.createElement("button");
-        restoreBtn.textContent = "Restore";
-        restoreBtn.className = "edit-btn";
-        restoreBtn.onclick = () => restoreNote(index);
-
-        const permDeleteBtn = document.createElement("button");
-        permDeleteBtn.textContent = "Delete Forever";
-        permDeleteBtn.className = "delete-btn";
-        permDeleteBtn.onclick = () => permanentlyDelete(index);
-
-        actions.appendChild(restoreBtn);
-        actions.appendChild(permDeleteBtn);
-        card.appendChild(content);
-        card.appendChild(actions);
-        trashGrid.appendChild(card);
-    });
     
 if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark-mode");
@@ -362,80 +409,6 @@ document.getElementById("navTrash").addEventListener("click", () => {
     document.getElementById("navNotes").classList.remove("active");
     renderTrash();
 });
-function filterNotesByCategory(category) {
-    currentFilter = category;
-    
-    if (category === "all") {
-        renderNotes(searchInput.value);
-    } else {
-        const filtered = notes.filter(note => 
-            note.labels && note.labels.includes(category)
-        );
-        
-        // Create a temporary filtered display
-        notesGrid.innerHTML = "";
-        
-        if (filtered.length === 0) {
-            notesGrid.innerHTML = `<p style="text-align:center; margin-top:20px; color:#777;">
-                No ${category} notes found
-            </p>`;
-            return;
-        }
-        
-        filtered.forEach((note, index) => {
-            const originalIndex = notes.findIndex(n => n.id === note.id);
-            
-            const card = document.createElement("div");
-            card.className = "note-card";
-            
-            if (note.labels && note.labels.length > 0) {
-                card.setAttribute('data-labels', note.labels.join(' '));
-                
-                const labelsDiv = document.createElement("div");
-                labelsDiv.className = "note-labels";
-                
-                note.labels.forEach(label => {
-                    const labelSpan = document.createElement("span");
-                    labelSpan.className = `note-label ${label.toLowerCase()}`;
-                    labelSpan.textContent = label;
-                    labelsDiv.appendChild(labelSpan);
-                });
-                
-                card.appendChild(labelsDiv);
-            }
-            
-            const content = document.createElement("p");
-            content.textContent = note.text;
-            
-            const actions = document.createElement("div");
-            actions.className = "card-actions";
-            
-            const editBtn = document.createElement("button");
-            editBtn.textContent = "Edit";
-            editBtn.className = "edit-btn";
-            editBtn.onclick = () => editNote(originalIndex);
-            
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Delete";
-            deleteBtn.className = "delete-btn";
-            deleteBtn.onclick = () => deleteNote(originalIndex);
-            
-            actions.appendChild(editBtn);
-            actions.appendChild(deleteBtn);
-            
-            card.appendChild(content);
-            card.appendChild(actions);
-            
-            notesGrid.appendChild(card);
-        });
-    }
-    
-    // Update active state in sidebar
-    document.querySelectorAll('.sidebar li').forEach(li => {
-        li.classList.remove('active');
-    });
-    document.getElementById(`nav${category}`).classList.add('active');
-}
 // Category filter event listeners
 document.getElementById("navImportant").addEventListener("click", () => {
     document.getElementById("notesView").style.display = "block";
